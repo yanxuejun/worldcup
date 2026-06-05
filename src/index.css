@@ -1,6 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-world-cup-gold: #FFD700;
+  --color-world-cup-green: #2E8B57;
+  --color-world-cup-dark: #0a0a0a;
+  --color-world-cup-card: #1a1a1a;
+  --color-world-cup-accent: #00ff88;
+
+  --font-display: 'Oswald', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-spin-slow: spin 8s linear infinite;
+}
 
 @layer base {
   :root {
