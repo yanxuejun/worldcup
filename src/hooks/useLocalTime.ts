@@ -9,6 +9,11 @@ export interface TimeInfo {
   country: string;
 }
 
+function getSavedLang(): 'en' | 'zh' {
+  const saved = localStorage.getItem('worldcup-lang');
+  return saved === 'zh' ? 'zh' : 'en';
+}
+
 function getUserTimezone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
@@ -24,8 +29,8 @@ function getTimezoneOffsetName(timezone: string): string {
   return offsetPart?.value || '';
 }
 
-function getCityFromTimezone(timezone: string): { city: string; country: string } {
-  const mapping: Record<string, { city: string; country: string }> = {
+function getCityFromTimezone(timezone: string, lang: 'en' | 'zh'): { city: string; country: string } {
+  const mappingZh: Record<string, { city: string; country: string }> = {
     'Asia/Shanghai': { city: '上海', country: '中国' },
     'Asia/Beijing': { city: '北京', country: '中国' },
     'Asia/Hong_Kong': { city: '香港', country: '中国' },
@@ -66,12 +71,55 @@ function getCityFromTimezone(timezone: string): { city: string; country: string 
     'Africa/Johannesburg': { city: '约翰内斯堡', country: '南非' },
   };
 
+  const mappingEn: Record<string, { city: string; country: string }> = {
+    'Asia/Shanghai': { city: 'Shanghai', country: 'China' },
+    'Asia/Beijing': { city: 'Beijing', country: 'China' },
+    'Asia/Hong_Kong': { city: 'Hong Kong', country: 'China' },
+    'Asia/Taipei': { city: 'Taipei', country: 'China' },
+    'Asia/Tokyo': { city: 'Tokyo', country: 'Japan' },
+    'Asia/Seoul': { city: 'Seoul', country: 'South Korea' },
+    'Asia/Singapore': { city: 'Singapore', country: 'Singapore' },
+    'Asia/Bangkok': { city: 'Bangkok', country: 'Thailand' },
+    'Asia/Dubai': { city: 'Dubai', country: 'UAE' },
+    'Asia/Kolkata': { city: 'New Delhi', country: 'India' },
+    'Asia/Jakarta': { city: 'Jakarta', country: 'Indonesia' },
+    'Asia/Manila': { city: 'Manila', country: 'Philippines' },
+    'Asia/Kuala_Lumpur': { city: 'Kuala Lumpur', country: 'Malaysia' },
+    'Asia/Ho_Chi_Minh': { city: 'Ho Chi Minh City', country: 'Vietnam' },
+    'Europe/London': { city: 'London', country: 'UK' },
+    'Europe/Paris': { city: 'Paris', country: 'France' },
+    'Europe/Berlin': { city: 'Berlin', country: 'Germany' },
+    'Europe/Madrid': { city: 'Madrid', country: 'Spain' },
+    'Europe/Rome': { city: 'Rome', country: 'Italy' },
+    'Europe/Amsterdam': { city: 'Amsterdam', country: 'Netherlands' },
+    'Europe/Moscow': { city: 'Moscow', country: 'Russia' },
+    'Europe/Istanbul': { city: 'Istanbul', country: 'Turkey' },
+    'America/New_York': { city: 'New York', country: 'USA' },
+    'America/Los_Angeles': { city: 'Los Angeles', country: 'USA' },
+    'America/Chicago': { city: 'Chicago', country: 'USA' },
+    'America/Denver': { city: 'Denver', country: 'USA' },
+    'America/Toronto': { city: 'Toronto', country: 'Canada' },
+    'America/Vancouver': { city: 'Vancouver', country: 'Canada' },
+    'America/Mexico_City': { city: 'Mexico City', country: 'Mexico' },
+    'America/Sao_Paulo': { city: 'Sao Paulo', country: 'Brazil' },
+    'America/Buenos_Aires': { city: 'Buenos Aires', country: 'Argentina' },
+    'America/Lima': { city: 'Lima', country: 'Peru' },
+    'Australia/Sydney': { city: 'Sydney', country: 'Australia' },
+    'Australia/Melbourne': { city: 'Melbourne', country: 'Australia' },
+    'Pacific/Auckland': { city: 'Auckland', country: 'New Zealand' },
+    'Africa/Cairo': { city: 'Cairo', country: 'Egypt' },
+    'Africa/Lagos': { city: 'Lagos', country: 'Nigeria' },
+    'Africa/Johannesburg': { city: 'Johannesburg', country: 'South Africa' },
+  };
+
+  const mapping = lang === 'en' ? mappingEn : mappingZh;
   return mapping[timezone] || { city: timezone.split('/').pop()?.replace('_', ' ') || timezone, country: '' };
 }
 
 export function convertToLocalTime(dateStr: string, timeStr: string, sourceTimezone: string): TimeInfo {
+  const lang = getSavedLang();
   const tz = getUserTimezone();
-  const { city, country } = getCityFromTimezone(tz);
+  const { city, country } = getCityFromTimezone(tz, lang);
 
   // Parse source time as if it's in the source timezone
   const [year, month, day] = dateStr.split('-').map(Number);
@@ -85,7 +133,8 @@ export function convertToLocalTime(dateStr: string, timeStr: string, sourceTimez
   const sourceDateStr = `${dateStr}T${timeStr}:00`;
 
   // Convert to local time
-  const localFormatter = new Intl.DateTimeFormat('zh-CN', {
+  const locale = lang === 'en' ? 'en-US' : 'zh-CN';
+  const localFormatter = new Intl.DateTimeFormat(locale, {
     timeZone: tz,
     year: 'numeric',
     month: '2-digit',
@@ -113,12 +162,12 @@ export function convertToLocalTime(dateStr: string, timeStr: string, sourceTimez
 
 export function useLocalTime() {
   const [timezone, setTimezone] = useState(getUserTimezone());
-  const [location, setLocation] = useState(getCityFromTimezone(getUserTimezone()));
+  const [location, setLocation] = useState(() => getCityFromTimezone(getUserTimezone(), getSavedLang()));
 
   useEffect(() => {
     const tz = getUserTimezone();
     setTimezone(tz);
-    setLocation(getCityFromTimezone(tz));
+    setLocation(getCityFromTimezone(tz, getSavedLang()));
   }, []);
 
   const formatMatchTime = useCallback((dateStr: string, timeStr: string, sourceTz: string = 'America/New_York') => {
@@ -129,17 +178,24 @@ export function useLocalTime() {
 }
 
 export function getRelativeTime(dateStr: string, timeStr: string): string {
+  const lang = getSavedLang();
   const [year, month, day] = dateStr.split('-').map(Number);
   const [hour, minute] = timeStr.split(':').map(Number);
   const matchDate = new Date(year, month - 1, day, hour, minute);
   const now = new Date();
   const diff = matchDate.getTime() - now.getTime();
 
-  if (diff < 0) return '已结束';
+  if (diff < 0) return lang === 'en' ? 'Finished' : '已结束';
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  if (lang === 'en') {
+    if (days > 0) return `in ${days}d ${hours}h`;
+    if (hours > 0) return `in ${hours}h ${minutes}m`;
+    return `in ${minutes}m`;
+  }
 
   if (days > 0) return `${days}天 ${hours}小时后`;
   if (hours > 0) return `${hours}小时 ${minutes}分钟后`;

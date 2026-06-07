@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Vote, TrendingUp, Users, CheckCircle2, Clock, Filter } from 'lucide-react';
-import { allMatches, roundLabels, getTeamById, groups } from '../data/worldcupData';
+import { allMatches, getTeamById, groups } from '../data/worldcupData';
 import { useLocalTime } from '../hooks/useLocalTime';
+import { useI18n } from '../i18n';
 import type { VoteRecord } from '../types';
 
 export default function VotingPage() {
+  const { t, lang } = useI18n();
   const { formatMatchTime } = useLocalTime();
   const [votes, setVotes] = useState<Record<string, VoteRecord>>(() => {
     const saved = localStorage.getItem('worldcup-votes');
@@ -41,14 +43,20 @@ export default function VotingPage() {
   }
 
   function getVoteStats(matchId: string) {
-    // In a real app, this would come from a backend
-    // For demo, we generate consistent pseudo-random stats
     const seed = matchId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
     const total = 1000 + (seed % 5000);
     const homeW = 30 + (seed % 35);
     const draw = 15 + (seed % 20);
     const awayW = 100 - homeW - draw;
     return { total, homeW, draw, awayW };
+  }
+
+  function getRoundLabel(round: string) {
+    return t(`round.${round}`);
+  }
+
+  function getGroupLabel(group: string) {
+    return lang === 'zh' ? `${group}组` : `Group ${group}`;
   }
 
   return (
@@ -59,8 +67,8 @@ export default function VotingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 font-display">预测投票</h1>
-          <p className="text-gray-400">为每场比赛投票预测胜负，看看谁的直觉最准</p>
+          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 font-display">{t('voting.title')}</h1>
+          <p className="text-gray-400">{t('voting.subtitle')}</p>
         </motion.div>
 
         {/* Stats Bar */}
@@ -76,20 +84,20 @@ export default function VotingPage() {
                 <Vote className="w-5 h-5 text-[#00ff88]" />
                 <div>
                   <p className="text-lg font-bold text-white">{Object.keys(votes).length}</p>
-                  <p className="text-xs text-gray-500">您已投票</p>
+                  <p className="text-xs text-gray-500">{lang === 'zh' ? '您已投票' : 'Your votes'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-[#FFD700]" />
                 <div>
                   <p className="text-lg font-bold text-white">{allMatches.length}</p>
-                  <p className="text-xs text-gray-500">总场次</p>
+                  <p className="text-xs text-gray-500">{lang === 'zh' ? '总场次' : 'Total matches'}</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <TrendingUp className="w-4 h-4 text-[#00ff88]" />
-              <span>投票数据存储在本地浏览器中</span>
+              <span>{lang === 'zh' ? '投票数据存储在本地浏览器中' : 'Vote data is stored locally in your browser'}</span>
             </div>
           </div>
         </motion.div>
@@ -104,7 +112,7 @@ export default function VotingPage() {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-400">轮次:</span>
+              <span className="text-sm text-gray-400">{t('schedule.filterLabel')}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {rounds.map(r => (
@@ -115,7 +123,7 @@ export default function VotingPage() {
                     selectedRound === r ? 'bg-[#00ff88]/20 text-[#00ff88]' : 'bg-white/5 text-gray-400 hover:text-white'
                   }`}
                 >
-                  {roundLabels[r]}
+                  {getRoundLabel(r)}
                 </button>
               ))}
             </div>
@@ -128,7 +136,7 @@ export default function VotingPage() {
                   selectedGroup === 'ALL' ? 'bg-[#FFD700]/20 text-[#FFD700]' : 'bg-white/5 text-gray-400 hover:text-white'
                 }`}
               >
-                全部小组
+                {t('schedule.allGroups')}
               </button>
               {groups.map(g => (
                 <button
@@ -138,7 +146,7 @@ export default function VotingPage() {
                     selectedGroup === g ? 'bg-[#FFD700]/20 text-[#FFD700]' : 'bg-white/5 text-gray-400 hover:text-white'
                   }`}
                 >
-                  {g}组
+                  {getGroupLabel(g)}
                 </button>
               ))}
             </div>
@@ -170,7 +178,7 @@ export default function VotingPage() {
                       <Clock className="w-3.5 h-3.5" />
                       <span>{localInfo.localDate} {localInfo.localTime}</span>
                       <span className="text-gray-600">|</span>
-                      <span>{match.group ? `${match.group}组` : roundLabels[match.round]}</span>
+                      <span>{match.group ? getGroupLabel(match.group) : getRoundLabel(match.round)}</span>
                     </div>
                     {isVoted && (
                       <motion.div
@@ -179,7 +187,7 @@ export default function VotingPage() {
                         className="flex items-center gap-1 text-xs text-[#00ff88]"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        已投票
+                        {t('voting.voted')}
                       </motion.div>
                     )}
                   </div>
@@ -188,23 +196,23 @@ export default function VotingPage() {
                   <div className="flex items-center gap-4 mb-5">
                     <div className="flex-1 flex flex-col items-center gap-2">
                       <span className="text-4xl">{homeTeam?.flag || '❓'}</span>
-                      <span className="text-sm font-bold text-white text-center">{homeTeam?.name || match.homeTeam}</span>
-                      <span className="text-xs text-gray-500">主</span>
+                      <span className="text-sm font-bold text-white text-center">{lang === 'en' ? homeTeam?.nameEn : homeTeam?.name || match.homeTeam}</span>
+                      <span className="text-xs text-gray-500">{lang === 'zh' ? '主' : 'Home'}</span>
                     </div>
                     <div className="text-xl font-bold text-gray-600 font-display">VS</div>
                     <div className="flex-1 flex flex-col items-center gap-2">
                       <span className="text-4xl">{awayTeam?.flag || '❓'}</span>
-                      <span className="text-sm font-bold text-white text-center">{awayTeam?.name || match.awayTeam}</span>
-                      <span className="text-xs text-gray-500">客</span>
+                      <span className="text-sm font-bold text-white text-center">{lang === 'en' ? awayTeam?.nameEn : awayTeam?.name || match.awayTeam}</span>
+                      <span className="text-xs text-gray-500">{lang === 'zh' ? '客' : 'Away'}</span>
                     </div>
                   </div>
 
                   {/* Vote Buttons */}
                   <div className="grid grid-cols-3 gap-3 mb-4">
                     {[
-                      { key: 'home' as const, label: homeTeam?.name || '主队', icon: homeTeam?.flag || '🏠', color: 'from-[#00ff88]/20 to-[#00cc6a]/20', border: '#00ff88' },
-                      { key: 'draw' as const, label: '平局', icon: '🤝', color: 'from-gray-500/20 to-gray-600/20', border: '#888' },
-                      { key: 'away' as const, label: awayTeam?.name || '客队', icon: awayTeam?.flag || '✈️', color: 'from-[#FFD700]/20 to-[#FFA500]/20', border: '#FFD700' },
+                      { key: 'home' as const, label: lang === 'en' ? (homeTeam?.nameEn || 'Home') : (homeTeam?.name || '主队'), icon: homeTeam?.flag || '🏠', color: 'from-[#00ff88]/20 to-[#00cc6a]/20', border: '#00ff88' },
+                      { key: 'draw' as const, label: t('voting.draw'), icon: '🤝', color: 'from-gray-500/20 to-gray-600/20', border: '#888' },
+                      { key: 'away' as const, label: lang === 'en' ? (awayTeam?.nameEn || 'Away') : (awayTeam?.name || '客队'), icon: awayTeam?.flag || '✈️', color: 'from-[#FFD700]/20 to-[#FFA500]/20', border: '#FFD700' },
                     ].map(option => (
                       <motion.button
                         key={option.key}
@@ -239,7 +247,7 @@ export default function VotingPage() {
                   {/* Vote Stats */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>全网预测分布 ({stats.total.toLocaleString()} 票)</span>
+                      <span>{lang === 'zh' ? `全网预测分布 (${stats.total.toLocaleString()} 票)` : `Prediction distribution (${stats.total.toLocaleString()} votes)`}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden flex">
@@ -264,9 +272,9 @@ export default function VotingPage() {
                       </div>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-[#00ff88]">{stats.homeW}% 主胜</span>
-                      <span className="text-gray-400">{stats.draw}% 平</span>
-                      <span className="text-[#FFD700]">{stats.awayW}% 客胜</span>
+                      <span className="text-[#00ff88]">{stats.homeW}% {lang === 'zh' ? '主胜' : 'Home'}</span>
+                      <span className="text-gray-400">{stats.draw}% {lang === 'zh' ? '平' : 'Draw'}</span>
+                      <span className="text-[#FFD700]">{stats.awayW}% {lang === 'zh' ? '客胜' : 'Away'}</span>
                     </div>
                   </div>
 
@@ -279,7 +287,7 @@ export default function VotingPage() {
                         exit={{ opacity: 0 }}
                         className="mt-3 py-2 px-3 rounded-lg bg-[#00ff88]/10 border border-[#00ff88]/30 text-center"
                       >
-                        <span className="text-sm text-[#00ff88] font-medium">投票成功！感谢您的参与</span>
+                        <span className="text-sm text-[#00ff88] font-medium">{t('voting.thanks')}</span>
                       </motion.div>
                     )}
                   </AnimatePresence>

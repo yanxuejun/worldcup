@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, MapPin, Calendar, ChevronDown, ChevronUp, Filter } from 'lucide-react';
-import { allMatches, groups, roundLabels, getTeamById } from '../data/worldcupData';
+import { allMatches, groups, getTeamById } from '../data/worldcupData';
 import { useLocalTime, getRelativeTime } from '../hooks/useLocalTime';
+import { useI18n } from '../i18n';
 
 export default function SchedulePage() {
+  const { t, lang } = useI18n();
   const { formatMatchTime, location } = useLocalTime();
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [selectedRound, setSelectedRound] = useState<string>('ALL');
@@ -39,12 +41,21 @@ export default function SchedulePage() {
 
   function formatDate(dateStr: string) {
     const date = new Date(dateStr + 'T00:00:00');
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const weekdaysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekdaysZh = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     return {
       month: date.getMonth() + 1,
       day: date.getDate(),
-      weekday: weekdays[date.getDay()],
+      weekday: lang === 'zh' ? weekdaysZh[date.getDay()] : weekdaysEn[date.getDay()],
     };
+  }
+
+  function getRoundLabel(round: string) {
+    return t(`round.${round}`);
+  }
+
+  function getGroupLabel(group: string) {
+    return lang === 'zh' ? `${group}组` : `Group ${group}`;
   }
 
   return (
@@ -56,13 +67,13 @@ export default function SchedulePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 font-display">完整赛程</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 font-display">{t('schedule.title')}</h1>
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
             <MapPin className="w-4 h-4 text-[#00ff88]" />
-            <span>您的位置: {location.city}{location.country ? `, ${location.country}` : ''}</span>
+            <span>{t('schedule.locationPrefix')} {location.city}{location.country ? `, ${location.country}` : ''}</span>
             <span className="text-gray-600">|</span>
             <Clock className="w-4 h-4 text-[#FFD700]" />
-            <span>比赛时间已自动转换为您当地时间</span>
+            <span>{t('schedule.convertedNotice')}</span>
           </div>
         </motion.div>
 
@@ -76,7 +87,7 @@ export default function SchedulePage() {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-400">筛选:</span>
+              <span className="text-sm text-gray-400">{t('schedule.filterLabel')}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -85,7 +96,7 @@ export default function SchedulePage() {
                   selectedRound === 'ALL' ? 'bg-[#00ff88]/20 text-[#00ff88]' : 'bg-white/5 text-gray-400 hover:text-white'
                 }`}
               >
-                全部轮次
+                {t('schedule.allRounds')}
               </button>
               {rounds.map(r => (
                 <button
@@ -95,7 +106,7 @@ export default function SchedulePage() {
                     selectedRound === r ? 'bg-[#00ff88]/20 text-[#00ff88]' : 'bg-white/5 text-gray-400 hover:text-white'
                   }`}
                 >
-                  {roundLabels[r]}
+                  {getRoundLabel(r)}
                 </button>
               ))}
             </div>
@@ -108,7 +119,7 @@ export default function SchedulePage() {
                   selectedGroup === 'ALL' ? 'bg-[#FFD700]/20 text-[#FFD700]' : 'bg-white/5 text-gray-400 hover:text-white'
                 }`}
               >
-                全部小组
+                {t('schedule.allGroups')}
               </button>
               {groups.map(g => (
                 <button
@@ -118,7 +129,7 @@ export default function SchedulePage() {
                     selectedGroup === g ? 'bg-[#FFD700]/20 text-[#FFD700]' : 'bg-white/5 text-gray-400 hover:text-white'
                   }`}
                 >
-                  {g}组
+                  {getGroupLabel(g)}
                 </button>
               ))}
             </div>
@@ -134,7 +145,7 @@ export default function SchedulePage() {
                 viewMode === 'date' ? 'bg-[#00ff88]/20 text-[#00ff88]' : 'text-gray-400'
               }`}
             >
-              按日期
+              {t('schedule.viewByDate')}
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -142,7 +153,7 @@ export default function SchedulePage() {
                 viewMode === 'list' ? 'bg-[#00ff88]/20 text-[#00ff88]' : 'text-gray-400'
               }`}
             >
-              列表
+              {t('schedule.viewList')}
             </button>
           </div>
         </div>
@@ -152,7 +163,7 @@ export default function SchedulePage() {
           {matchesByDate.length === 0 ? (
             <div className="text-center py-20 text-gray-500">
               <Calendar className="w-12 h-12 mx-auto mb-4 opacity-30" />
-              <p>没有找到符合条件的比赛</p>
+              <p>{t('schedule.noMatches')}</p>
             </div>
           ) : (
             matchesByDate.map(([date, matches]) => {
@@ -168,11 +179,11 @@ export default function SchedulePage() {
                       <span className="text-lg font-bold gradient-text">{d.day}</span>
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-white">{d.month}月{d.day}日</div>
+                      <div className="text-sm font-bold text-white">{d.month}/{d.day}</div>
                       <div className="text-xs text-gray-500">{d.weekday}</div>
                     </div>
                     <div className="flex-1 h-px bg-white/5" />
-                    <span className="text-xs text-gray-500">{matches.length} 场比赛</span>
+                    <span className="text-xs text-gray-500">{matches.length} {t('schedule.matchesCount')}</span>
                   </div>
 
                   <div className="space-y-3">
@@ -214,7 +225,7 @@ export default function SchedulePage() {
                             {/* Meta */}
                             <div className="flex flex-col items-end gap-1 min-w-[80px]">
                               <span className="text-xs px-2 py-0.5 rounded bg-white/5 text-gray-400">
-                                {match.group ? `${match.group}组` : roundLabels[match.round]}
+                                {match.group ? getGroupLabel(match.group) : getRoundLabel(match.round)}
                               </span>
                               <span className="text-xs text-gray-500">
                                 {getRelativeTime(match.date, match.time)}
@@ -242,27 +253,27 @@ export default function SchedulePage() {
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-gray-400">
                                       <Clock className="w-4 h-4 text-[#00ff88]" />
-                                      <span>当地时间: {match.date} {match.time} ({match.timezone})</span>
+                                      <span>{t('schedule.sourceTime')}: {match.date} {match.time} ({match.timezone})</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-gray-400">
                                       <Calendar className="w-4 h-4 text-gray-500" />
-                                      <span>您的当地时间: {localInfo.localDate} {localInfo.localTime}</span>
+                                      <span>{t('schedule.localTime')}: {localInfo.localDate} {localInfo.localTime}</span>
                                     </div>
                                   </div>
                                   {match.prediction && (
                                     <div className="mt-4 p-3 rounded-lg bg-white/5">
-                                      <p className="text-xs text-gray-500 mb-2">AI 预测胜率</p>
+                                      <p className="text-xs text-gray-500 mb-2">AI {t('voting.totalVotes')}</p>
                                       <div className="flex items-center gap-2">
-                                        <span className="text-xs text-gray-400 w-16 text-right">{homeTeam?.name || '主队'}</span>
+                                        <span className="text-xs text-gray-400 w-16 text-right">{homeTeam?.name || 'Home'}</span>
                                         <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden flex">
                                           <div className="h-full bg-[#00ff88]" style={{ width: `${match.prediction.homeWin}%` }} />
                                           <div className="h-full bg-gray-500" style={{ width: `${match.prediction.draw}%` }} />
                                           <div className="h-full bg-[#FFD700]" style={{ width: `${match.prediction.awayWin}%` }} />
                                         </div>
-                                        <span className="text-xs text-gray-400 w-16">{awayTeam?.name || '客队'}</span>
+                                        <span className="text-xs text-gray-400 w-16">{awayTeam?.name || 'Away'}</span>
                                       </div>
                                       <div className="flex justify-center mt-1 text-xs text-gray-500">
-                                        平局 {match.prediction.draw}%
+                                        {t('voting.draw')} {match.prediction.draw}%
                                       </div>
                                     </div>
                                   )}

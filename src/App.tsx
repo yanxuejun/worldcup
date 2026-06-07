@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { I18nProvider } from './i18n'
 import ParticleBackground from './components/ParticleBackground'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -24,6 +25,7 @@ export default function App() {
   const PageComponent = pageComponents[currentPage]
 
   return (
+    <I18nProvider>
     <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-x-hidden">
       {/* Background Effects */}
       <div className="fixed inset-0 z-0">
@@ -66,5 +68,6 @@ export default function App() {
 
       <Footer />
     </div>
+    </I18nProvider>
   )
 }

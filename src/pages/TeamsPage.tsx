@@ -2,9 +2,22 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Star, User, Search, Shield, ChevronRight, Award } from 'lucide-react';
 import { teams, groups, getTeamsByGroup } from '../data/worldcupData';
+import { useI18n } from '../i18n';
 import type { Team } from '../types';
 
-function TeamDetailCard({ team, onClose }: { team: Team; onClose: () => void }) {
+const continentEnMap: Record<string, string> = {
+  '欧洲': 'Europe',
+  '南美洲': 'South America',
+  '亚洲': 'Asia',
+  '非洲': 'Africa',
+  '中北美': 'North America',
+  '大洋洲': 'Oceania',
+};
+
+function TeamDetailCard({ team, onClose, lang, t }: { team: Team; onClose: () => void; lang: string; t: (key: string) => string }) {
+  const displayName = lang === 'en' ? team.nameEn : team.name;
+  const continent = lang === 'en' ? (continentEnMap[team.continent] || team.continent) : team.continent;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -23,12 +36,12 @@ function TeamDetailCard({ team, onClose }: { team: Team; onClose: () => void }) 
         <div className="flex items-center gap-4 mb-6">
           <span className="text-5xl">{team.flag}</span>
           <div>
-            <h2 className="text-2xl font-bold text-white font-display">{team.name}</h2>
-            <p className="text-sm text-gray-400">{team.nameEn}</p>
+            <h2 className="text-2xl font-bold text-white font-display">{displayName}</h2>
+            <p className="text-sm text-gray-400">{lang === 'en' ? team.name : team.nameEn}</p>
           </div>
           <div className="ml-auto">
             <span className="text-3xl font-bold gradient-text font-display">#{team.fifaRank}</span>
-            <p className="text-xs text-gray-500">FIFA排名</p>
+            <p className="text-xs text-gray-500">{t('teams.fifaRank')}</p>
           </div>
         </div>
 
@@ -36,17 +49,17 @@ function TeamDetailCard({ team, onClose }: { team: Team; onClose: () => void }) 
           <div className="glass rounded-xl p-3 text-center">
             <Trophy className="w-5 h-5 mx-auto mb-1 text-[#FFD700]" />
             <p className="text-lg font-bold text-white">{team.titles}</p>
-            <p className="text-xs text-gray-500">世界杯冠军</p>
+            <p className="text-xs text-gray-500">{t('teams.worldCupTitles')}</p>
           </div>
           <div className="glass rounded-xl p-3 text-center">
             <Award className="w-5 h-5 mx-auto mb-1 text-[#00ff88]" />
-            <p className="text-lg font-bold text-white">{team.group}组</p>
-            <p className="text-xs text-gray-500">小组</p>
+            <p className="text-lg font-bold text-white">{team.group}</p>
+            <p className="text-xs text-gray-500">{t('teams.group')}</p>
           </div>
           <div className="glass rounded-xl p-3 text-center">
             <Shield className="w-5 h-5 mx-auto mb-1 text-blue-400" />
-            <p className="text-lg font-bold text-white">{team.continent}</p>
-            <p className="text-xs text-gray-500">大洲</p>
+            <p className="text-lg font-bold text-white">{continent}</p>
+            <p className="text-xs text-gray-500">{lang === 'zh' ? '大洲' : 'Continent'}</p>
           </div>
         </div>
 
@@ -54,20 +67,20 @@ function TeamDetailCard({ team, onClose }: { team: Team; onClose: () => void }) 
           <div>
             <h3 className="text-sm font-bold text-[#00ff88] mb-2 flex items-center gap-2">
               <Star className="w-4 h-4" />
-              最佳成绩
+              {t('teams.bestResult')}
             </h3>
             <p className="text-sm text-gray-300">{team.bestResult}</p>
           </div>
 
           <div>
-            <h3 className="text-sm font-bold text-[#00ff88] mb-2">球队简介</h3>
+            <h3 className="text-sm font-bold text-[#00ff88] mb-2">{lang === 'zh' ? '球队简介' : 'About'}</h3>
             <p className="text-sm text-gray-300 leading-relaxed">{team.description}</p>
           </div>
 
           <div>
             <h3 className="text-sm font-bold text-[#00ff88] mb-2 flex items-center gap-2">
               <User className="w-4 h-4" />
-              主教练
+              {t('teams.coach')}
             </h3>
             <p className="text-sm text-gray-300">{team.coach}</p>
           </div>
@@ -75,7 +88,7 @@ function TeamDetailCard({ team, onClose }: { team: Team; onClose: () => void }) 
           <div>
             <h3 className="text-sm font-bold text-[#00ff88] mb-2 flex items-center gap-2">
               <Star className="w-4 h-4" />
-              球星
+              {t('teams.starPlayers')}
             </h3>
             <div className="flex flex-wrap gap-2">
               {team.starPlayers.map(player => (
@@ -91,7 +104,7 @@ function TeamDetailCard({ team, onClose }: { team: Team; onClose: () => void }) 
           onClick={onClose}
           className="mt-6 w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-sm font-medium transition-colors cursor-pointer"
         >
-          关闭
+          {lang === 'zh' ? '关闭' : 'Close'}
         </button>
       </motion.div>
     </motion.div>
@@ -99,6 +112,7 @@ function TeamDetailCard({ team, onClose }: { team: Team; onClose: () => void }) 
 }
 
 export default function TeamsPage() {
+  const { t, lang } = useI18n();
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -118,6 +132,14 @@ export default function TeamsPage() {
     '大洋洲': 'bg-cyan-500/20 text-cyan-400',
   };
 
+  function getGroupLabel(g: string) {
+    return lang === 'zh' ? `${g}组` : `Group ${g}`;
+  }
+
+  function getContinentLabel(c: string) {
+    return lang === 'en' ? (continentEnMap[c] || c) : c;
+  }
+
   return (
     <div className="relative z-10 pt-24 pb-12 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
@@ -126,8 +148,10 @@ export default function TeamsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 font-display">参赛球队</h1>
-          <p className="text-gray-400">48支世界杯参赛球队，点击查看详细介绍</p>
+          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 font-display">{t('teams.title')}</h1>
+          <p className="text-gray-400">
+            {lang === 'zh' ? '48支世界杯参赛球队，点击查看详细介绍' : '48 World Cup teams — click to view details'}
+          </p>
         </motion.div>
 
         {/* Search & Filter */}
@@ -141,7 +165,7 @@ export default function TeamsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
-              placeholder="搜索球队..."
+              placeholder={t('teams.searchPlaceholder')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/5 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-[#00ff88]/30 transition-colors"
@@ -154,7 +178,7 @@ export default function TeamsPage() {
                 selectedGroup === 'ALL' ? 'bg-[#00ff88]/20 text-[#00ff88]' : 'bg-white/5 text-gray-400 hover:text-white'
               }`}
             >
-              全部
+              {lang === 'zh' ? '全部' : 'All'}
             </button>
             {groups.map(g => (
               <button
@@ -164,7 +188,7 @@ export default function TeamsPage() {
                   selectedGroup === g ? 'bg-[#FFD700]/20 text-[#FFD700]' : 'bg-white/5 text-gray-400 hover:text-white'
                 }`}
               >
-                {g}组
+                {getGroupLabel(g)}
               </button>
             ))}
           </div>
@@ -186,7 +210,7 @@ export default function TeamsPage() {
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ff88]/20 to-[#FFD700]/20 flex items-center justify-center">
                     <span className="text-lg font-bold gradient-text">{group}</span>
                   </div>
-                  <h2 className="text-xl font-bold text-white font-display">{group}组</h2>
+                  <h2 className="text-xl font-bold text-white font-display">{getGroupLabel(group)}</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {groupTeams.map((team, i) => (
@@ -203,14 +227,14 @@ export default function TeamsPage() {
                       <div className="flex items-center gap-3 mb-3">
                         <span className="text-3xl">{team.flag}</span>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-white truncate">{team.name}</h3>
-                          <p className="text-xs text-gray-500">{team.nameEn}</p>
+                          <h3 className="font-bold text-white truncate">{lang === 'en' ? team.nameEn : team.name}</h3>
+                          <p className="text-xs text-gray-500">{lang === 'en' ? team.name : team.nameEn}</p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-600" />
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${continentColors[team.continent] || 'bg-white/5 text-gray-400'}`}>
-                          {team.continent}
+                          {getContinentLabel(team.continent)}
                         </span>
                         <span className="text-xs text-gray-500">#{team.fifaRank}</span>
                       </div>
@@ -235,17 +259,17 @@ export default function TeamsPage() {
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-3xl">{team.flag}</span>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-white truncate">{team.name}</h3>
-                    <p className="text-xs text-gray-500">{team.nameEn}</p>
+                    <h3 className="font-bold text-white truncate">{lang === 'en' ? team.nameEn : team.name}</h3>
+                    <p className="text-xs text-gray-500">{lang === 'en' ? team.name : team.nameEn}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-600" />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${continentColors[team.continent] || 'bg-white/5 text-gray-400'}`}>
-                    {team.continent}
+                    {getContinentLabel(team.continent)}
                   </span>
                   <span className="text-xs text-gray-500">#{team.fifaRank}</span>
-                  <span className="text-xs text-[#FFD700]/70">{team.group}组</span>
+                  <span className="text-xs text-[#FFD700]/70">{getGroupLabel(team.group)}</span>
                 </div>
               </motion.div>
             ))}
@@ -254,7 +278,7 @@ export default function TeamsPage() {
 
         <AnimatePresence>
           {selectedTeam && (
-            <TeamDetailCard team={selectedTeam} onClose={() => setSelectedTeam(null)} />
+            <TeamDetailCard team={selectedTeam} onClose={() => setSelectedTeam(null)} lang={lang} t={t} />
           )}
         </AnimatePresence>
       </div>

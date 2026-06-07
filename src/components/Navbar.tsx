@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Calendar, Users, Vote, BarChart3, Menu, X, Globe } from 'lucide-react';
+import { Trophy, Calendar, Users, Vote, BarChart3, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { useI18n } from '../i18n';
 import type { Page } from '../types';
 
 interface NavbarProps {
@@ -8,16 +9,17 @@ interface NavbarProps {
   onNavigate: (page: Page) => void;
 }
 
-const navItems: { page: Page; label: string; icon: typeof Trophy }[] = [
-  { page: 'home', label: '首页', icon: Trophy },
-  { page: 'schedule', label: '赛程', icon: Calendar },
-  { page: 'teams', label: '球队', icon: Users },
-  { page: 'voting', label: '预测投票', icon: Vote },
-  { page: 'results', label: '赛果', icon: BarChart3 },
-];
-
 export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { lang, setLang, t } = useI18n();
+
+  const navItems: { page: Page; label: string; icon: typeof Trophy }[] = [
+    { page: 'home', label: t('nav.home'), icon: Trophy },
+    { page: 'schedule', label: t('nav.schedule'), icon: Calendar },
+    { page: 'teams', label: t('nav.teams'), icon: Users },
+    { page: 'voting', label: t('nav.voting'), icon: Vote },
+    { page: 'results', label: t('nav.results'), icon: BarChart3 },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-strong">
@@ -63,10 +65,25 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
             ))}
           </div>
 
-          {/* Globe icon */}
-          <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
-            <Globe className="w-4 h-4 text-[#00ff88]" />
-            <span>全球实时</span>
+          {/* Language toggle */}
+          <div className="hidden md:flex items-center gap-1">
+            <button
+              onClick={() => setLang('en')}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+                lang === 'en' ? 'text-[#00ff88] bg-[#00ff88]/10' : 'text-gray-500 hover:text-white'
+              }`}
+            >
+              {t('lang.en')}
+            </button>
+            <span className="text-gray-700 text-xs">/</span>
+            <button
+              onClick={() => setLang('zh')}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+                lang === 'zh' ? 'text-[#00ff88] bg-[#00ff88]/10' : 'text-gray-500 hover:text-white'
+              }`}
+            >
+              {t('lang.zh')}
+            </button>
           </div>
 
           {/* Mobile menu button */}
@@ -106,6 +123,24 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
                   {label}
                 </button>
               ))}
+              <div className="flex items-center gap-1 pt-2 border-t border-white/5 px-4">
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer ${
+                    lang === 'en' ? 'text-[#00ff88] bg-[#00ff88]/10' : 'text-gray-500'
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => { setLang('zh'); setMobileOpen(false); }}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer ${
+                    lang === 'zh' ? 'text-[#00ff88] bg-[#00ff88]/10' : 'text-gray-500'
+                  }`}
+                >
+                  中
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

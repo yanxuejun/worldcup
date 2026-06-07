@@ -1,14 +1,91 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>2026 FIFA World Cup - 世界杯赛程</title>
-    <meta name="description" content="2026 FIFA World Cup 世界杯赛程、球队介绍、比赛预测、实时投票" />
+
+    <!-- Primary Meta Tags -->
+    <title>2026 FIFA World Cup - Schedule, Teams, Predictions & Results</title>
+    <meta name="description" content="2026 FIFA World Cup full schedule, 48 team profiles, match predictions, live voting, and real-time results. USA, Canada & Mexico." />
+    <meta name="keywords" content="2026 World Cup, FIFA World Cup, soccer schedule, football predictions, World Cup teams, USA Canada Mexico 2026" />
+    <meta name="author" content="yanxuejun" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <link rel="canonical" href="https://worldcup-2026.pages.dev/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://worldcup-2026.pages.dev/" />
+    <meta property="og:title" content="2026 FIFA World Cup - Schedule, Teams, Predictions & Results" />
+    <meta property="og:description" content="Full schedule for the 2026 FIFA World Cup with 48 teams, match predictions, live voting, and real-time results." />
+    <meta property="og:image" content="https://worldcup-2026.pages.dev/og-image.png" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://worldcup-2026.pages.dev/" />
+    <meta property="twitter:title" content="2026 FIFA World Cup - Schedule, Teams, Predictions & Results" />
+    <meta property="twitter:description" content="Full schedule for the 2026 FIFA World Cup with 48 teams, match predictions, live voting, and real-time results." />
+    <meta property="twitter:image" content="https://worldcup-2026.pages.dev/og-image.png" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "2026 FIFA World Cup Schedule & Prediction Platform",
+      "url": "https://worldcup-2026.pages.dev/",
+      "description": "Full schedule for the 2026 FIFA World Cup with 48 teams, match predictions, live voting, and real-time results.",
+      "author": {
+        "@type": "Person",
+        "name": "yanxuejun"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://worldcup-2026.pages.dev/teams?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SportsEvent",
+      "name": "2026 FIFA World Cup",
+      "startDate": "2026-06-11",
+      "endDate": "2026-07-19",
+      "location": [
+        {
+          "@type": "Country",
+          "name": "United States"
+        },
+        {
+          "@type": "Country",
+          "name": "Canada"
+        },
+        {
+          "@type": "Country",
+          "name": "Mexico"
+        }
+      ],
+      "description": "The 23rd FIFA World Cup, the first edition to feature 48 teams, co-hosted by the United States, Canada, and Mexico."
+    }
+    </script>
+
+    <!-- Language preference script (runs before React hydration) -->
+    <script>
+      (function() {
+        var saved = localStorage.getItem('worldcup-lang');
+        if (saved === 'zh') {
+          document.documentElement.lang = 'zh-CN';
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

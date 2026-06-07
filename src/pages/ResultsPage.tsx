@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { Trophy, Medal, Calendar, MapPin, ChevronRight, Star, TrendingUp } from 'lucide-react';
 import { teams, allMatches, getTeamById } from '../data/worldcupData';
 import { useLocalTime } from '../hooks/useLocalTime';
+import { useI18n } from '../i18n';
 
-// Simulated results data
 const matchResults: Record<string, { homeScore: number; awayScore: number }> = {
   'm1': { homeScore: 2, awayScore: 0 },
   'm2': { homeScore: 1, awayScore: 1 },
@@ -13,7 +13,6 @@ const matchResults: Record<string, { homeScore: number; awayScore: number }> = {
   'm5': { homeScore: 2, awayScore: 2 },
 };
 
-// Group standings simulation
 function getGroupStandings(group: string) {
   const groupTeams = teams.filter(t => t.group === group);
   return groupTeams.map((team, i) => ({
@@ -29,6 +28,7 @@ function getGroupStandings(group: string) {
 }
 
 export default function ResultsPage() {
+  const { t, lang } = useI18n();
   const { formatMatchTime } = useLocalTime();
   const [activeTab, setActiveTab] = useState<'matches' | 'standings' | 'stats'>('matches');
 
@@ -47,10 +47,14 @@ export default function ResultsPage() {
     .slice(0, 5);
 
   const tabs = [
-    { key: 'matches' as const, label: '赛果', icon: Trophy },
-    { key: 'standings' as const, label: '积分榜', icon: TrendingUp },
-    { key: 'stats' as const, label: '数据统计', icon: Star },
+    { key: 'matches' as const, label: t('results.tabMatches'), icon: Trophy },
+    { key: 'standings' as const, label: t('results.tabStandings'), icon: TrendingUp },
+    { key: 'stats' as const, label: t('results.tabStats'), icon: Star },
   ];
+
+  function getGroupLabel(group: string) {
+    return lang === 'zh' ? `${group}组` : `Group ${group}`;
+  }
 
   return (
     <div className="relative z-10 pt-24 pb-12 px-4 sm:px-6">
@@ -60,8 +64,8 @@ export default function ResultsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 font-display">比赛结果</h1>
-          <p className="text-gray-400">实时追踪比赛结果、积分榜和赛事数据</p>
+          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 font-display">{t('results.title')}</h1>
+          <p className="text-gray-400">{t('results.subtitle')}</p>
         </motion.div>
 
         {/* Tabs */}
@@ -97,7 +101,7 @@ export default function ResultsPage() {
             >
               <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-[#FFD700]" />
-                即将开始
+                {lang === 'zh' ? '即将开始' : 'Upcoming'}
               </h2>
               <div className="grid grid-cols-1 gap-3">
                 {upcomingMatches.map((match, i) => {
@@ -118,7 +122,7 @@ export default function ResultsPage() {
                       </div>
                       <div className="flex-1 flex items-center justify-center gap-4">
                         <div className="flex items-center gap-2 flex-1 justify-end">
-                          <span className="text-sm font-medium text-white hidden sm:inline">{homeTeam?.name}</span>
+                          <span className="text-sm font-medium text-white hidden sm:inline">{lang === 'en' ? homeTeam?.nameEn : homeTeam?.name}</span>
                           <span className="text-xl">{homeTeam?.flag}</span>
                         </div>
                         <div className="px-3 py-1 rounded bg-white/5 text-sm font-bold text-gray-500 font-display">
@@ -126,11 +130,11 @@ export default function ResultsPage() {
                         </div>
                         <div className="flex items-center gap-2 flex-1">
                           <span className="text-xl">{awayTeam?.flag}</span>
-                          <span className="text-sm font-medium text-white hidden sm:inline">{awayTeam?.name}</span>
+                          <span className="text-sm font-medium text-white hidden sm:inline">{lang === 'en' ? awayTeam?.nameEn : awayTeam?.name}</span>
                         </div>
                       </div>
                       <div className="text-xs text-gray-500">
-                        {match.group ? `${match.group}组` : ''}
+                        {match.group ? getGroupLabel(match.group) : ''}
                       </div>
                     </motion.div>
                   );
@@ -146,7 +150,7 @@ export default function ResultsPage() {
               >
                 <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-[#00ff88]" />
-                  已结束
+                  {lang === 'zh' ? '已结束' : 'Finished'}
                 </h2>
                 <div className="grid grid-cols-1 gap-3">
                   {finishedMatches.map((match, i) => {
@@ -172,7 +176,7 @@ export default function ResultsPage() {
                         <div className="flex items-center gap-4">
                           <div className="flex-1 flex items-center justify-end gap-3">
                             <span className={`text-sm font-medium ${homeWon ? 'text-[#00ff88]' : 'text-white'}`}>
-                              {homeTeam?.name}
+                              {lang === 'en' ? homeTeam?.nameEn : homeTeam?.name}
                             </span>
                             <span className="text-2xl">{homeTeam?.flag}</span>
                           </div>
@@ -188,7 +192,7 @@ export default function ResultsPage() {
                           <div className="flex-1 flex items-center gap-3">
                             <span className="text-2xl">{awayTeam?.flag}</span>
                             <span className={`text-sm font-medium ${awayWon ? 'text-[#FFD700]' : 'text-white'}`}>
-                              {awayTeam?.name}
+                              {lang === 'en' ? awayTeam?.nameEn : awayTeam?.name}
                             </span>
                           </div>
                         </div>
@@ -214,23 +218,23 @@ export default function ResultsPage() {
                   className="glass rounded-xl overflow-hidden"
                 >
                   <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 className="font-bold text-lg text-white font-display">{group}组 积分榜</h3>
+                    <h3 className="font-bold text-lg text-white font-display">{getGroupLabel(group)} {lang === 'zh' ? '积分榜' : 'Standings'}</h3>
                     <ChevronRight className="w-4 h-4 text-gray-600" />
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="text-xs text-gray-500 border-b border-white/5">
-                          <th className="text-left px-4 py-2">排名</th>
-                          <th className="text-left px-4 py-2">球队</th>
-                          <th className="text-center px-2 py-2">赛</th>
-                          <th className="text-center px-2 py-2">胜</th>
-                          <th className="text-center px-2 py-2">平</th>
-                          <th className="text-center px-2 py-2">负</th>
-                          <th className="text-center px-2 py-2">进</th>
-                          <th className="text-center px-2 py-2">失</th>
-                          <th className="text-center px-2 py-2">净</th>
-                          <th className="text-center px-4 py-2 font-bold">分</th>
+                          <th className="text-left px-4 py-2">#</th>
+                          <th className="text-left px-4 py-2">{lang === 'zh' ? '球队' : 'Team'}</th>
+                          <th className="text-center px-2 py-2">{t('results.played')}</th>
+                          <th className="text-center px-2 py-2">{t('results.won')}</th>
+                          <th className="text-center px-2 py-2">{t('results.drawn')}</th>
+                          <th className="text-center px-2 py-2">{t('results.lost')}</th>
+                          <th className="text-center px-2 py-2">{t('results.gf')}</th>
+                          <th className="text-center px-2 py-2">{t('results.ga')}</th>
+                          <th className="text-center px-2 py-2">{t('results.gd')}</th>
+                          <th className="text-center px-4 py-2 font-bold">{t('results.points')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -251,7 +255,7 @@ export default function ResultsPage() {
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
                                 <span className="text-lg">{s.team.flag}</span>
-                                <span className="font-medium text-white">{s.team.name}</span>
+                                <span className="font-medium text-white">{lang === 'en' ? s.team.nameEn : s.team.name}</span>
                               </div>
                             </td>
                             <td className="text-center px-2 py-3 text-gray-400">{s.played}</td>
@@ -270,8 +274,8 @@ export default function ResultsPage() {
                     </table>
                   </div>
                   <div className="px-4 py-2 text-xs text-gray-500 flex gap-4">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#00ff88]/50" />直接晋级</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#FFD700]/50" />可能晋级</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#00ff88]/50" />{lang === 'zh' ? '直接晋级' : 'Qualified'}</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#FFD700]/50" />{lang === 'zh' ? '可能晋级' : 'Possible'}</span>
                   </div>
                 </motion.div>
               );
@@ -289,7 +293,7 @@ export default function ResultsPage() {
             <div className="glass rounded-xl p-6">
               <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                 <Medal className="w-5 h-5 text-[#FFD700]" />
-                冠军热门预测
+                {lang === 'zh' ? '冠军热门预测' : 'Title Favorites'}
               </h2>
               <div className="space-y-4">
                 {[
@@ -304,7 +308,7 @@ export default function ResultsPage() {
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{item.team!.flag}</span>
-                        <span className="text-sm font-medium text-white">{item.team!.name}</span>
+                        <span className="text-sm font-medium text-white">{lang === 'en' ? item.team!.nameEn : item.team!.name}</span>
                       </div>
                       <span className="text-sm font-bold gradient-text">{item.prob}%</span>
                     </div>
@@ -324,10 +328,10 @@ export default function ResultsPage() {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { label: '总进球', value: '12', icon: '⚽' },
-                { label: '场均进球', value: '2.4', icon: '📊' },
-                { label: '红牌', value: '1', icon: '🔴' },
-                { label: '黄牌', value: '18', icon: '🟨' },
+                { label: lang === 'zh' ? '总进球' : 'Total Goals', value: '12', icon: '⚽' },
+                { label: lang === 'zh' ? '场均进球' : 'Goals per Match', value: '2.4', icon: '📊' },
+                { label: lang === 'zh' ? '红牌' : 'Red Cards', value: '1', icon: '🔴' },
+                { label: lang === 'zh' ? '黄牌' : 'Yellow Cards', value: '18', icon: '🟨' },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
