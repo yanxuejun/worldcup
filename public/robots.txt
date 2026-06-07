@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://worldcup-2026.pages.dev/sitemap.xml
+Sitemap: https://worldcup.ai-tech.one/sitemap.xml
