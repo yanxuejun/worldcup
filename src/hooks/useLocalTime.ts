@@ -95,7 +95,7 @@ export function convertToLocalTime(dateStr: string, timeStr: string, sourceTimez
     hour12: false,
   });
 
-  // Parse the date assuming it's UTC-4 (EDT) for World Cup
+  // Parse the date assuming it's America/New_York (EDT) for World Cup
   const sourceDate = new Date(sourceDateStr + '-04:00');
   const localParts = localFormatter.formatToParts(sourceDate);
 
@@ -121,7 +121,7 @@ export function useLocalTime() {
     setLocation(getCityFromTimezone(tz));
   }, []);
 
-  const formatMatchTime = useCallback((dateStr: string, timeStr: string, sourceTz: string = 'UTC-4') => {
+  const formatMatchTime = useCallback((dateStr: string, timeStr: string, sourceTz: string = 'America/New_York') => {
     return convertToLocalTime(dateStr, timeStr, sourceTz);
   }, []);
 
